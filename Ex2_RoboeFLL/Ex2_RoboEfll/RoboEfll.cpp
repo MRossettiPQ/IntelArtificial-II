@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
 
 
 	int cont, randomico1, randomico2;																										//VARIAVEIS SIMULAÇÃO
-	for (cont = 0; cont <= 30; cont++)
+	for (cont = 0; cont <= 20; cont++)
 	{
 		srand(time(NULL));																													
 
@@ -169,8 +169,6 @@ int main(int argc, char *argv[])
 
 		cout << "Motor Direita: " << output1 << ", Motor Esquerda: " << output2 << endl;													//IMPRESSÃO DA VELOCIDADE DOS MOTORES APLICADA
 		cout << "\n" << endl;
-		randomico1 = 0;																											
-		randomico2 = 0;																											
 	}
 	system("pause");
     return 0;
