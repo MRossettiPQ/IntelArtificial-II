@@ -146,12 +146,10 @@ int main(int argc, char *argv[])
 
 
 	int cont, randomico1, randomico2;																										//VARIAVEIS SIMULA플O
-	for (cont = 0; cont <= 20; cont++)
+	for (cont = 0; cont <= 100; cont++)
 	{
-		srand(time(NULL));																													
-
-		randomico1 = rand() % 120;																											//CHAMADA E CRIA플O DE VALOR RANDOMICO PARA ENTRADA DO SENSOR
-		randomico2 = rand() % 120;																											//CHAMADA E CRIA플O DE VALOR RANDOMICO PARA ENTRADA DO SENSOR
+		randomico1 = rand() % 119;																											//CHAMADA E CRIA플O DE VALOR RANDOMICO PARA ENTRADA DO SENSOR
+		randomico2 = rand() % 119;																											//CHAMADA E CRIA플O DE VALOR RANDOMICO PARA ENTRADA DO SENSOR
 		cout << "VALOR SENSOR 1: " << randomico1 << ", VALOR SENSOR 2: " << randomico2 << endl;												//IMPRESS홒 DOS VALORES LIDOS PELO SENSOR
 
 		fuzzy->setInput(1, randomico1);																										//CHAMADA DA FUN플O QUE FUZZIFICA OS VALORES DO SENSOR 1
