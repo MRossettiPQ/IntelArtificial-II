@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
 
 		//Regra 2
 		FuzzyRuleAntecedent* distanciaPertoEsquerda1 = new FuzzyRuleAntecedent();															//Cria Antecedente
-			distanciaPerto->joinWithAND(SeguroD, PertoE);																					//Associação sensor Esquerdo com o Direito
+			distanciaPertoEsquerda1->joinWithAND(SeguroD, PertoE);																			//Associação sensor Esquerdo com o Direito
 		FuzzyRuleConsequent* virarDireita1			 = new FuzzyRuleConsequent();															//Cria Consequencia
 			velocidadeInvertida->addOutput(InvertidoD);																						//Define a Saida Direita
 			velocidadeInvertida->addOutput(MediaE);																							//Define a Saida Esquerda
@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
 
 		//Regra 3	
 		FuzzyRuleAntecedent* distanciaPertoEsquerda2 = new FuzzyRuleAntecedent();															//Cria Antecedente
-			distanciaPerto->joinWithAND(LongeD, PertoE);																					//Associação sensor Esquerdo com o Direito
+			distanciaPertoEsquerda2->joinWithAND(LongeD, PertoE);																			//Associação sensor Esquerdo com o Direito
 		FuzzyRuleConsequent* virarDireita2			 = new FuzzyRuleConsequent();															//Cria Consequencia
 			velocidadeInvertida->addOutput(BaixaD);																							//Define a Saida Direita
 			velocidadeInvertida->addOutput(MediaE);																							//Define a Saida Esquerda
@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
 
 		//Regra 4
 		FuzzyRuleAntecedent* distanciaPertoDireita1 = new FuzzyRuleAntecedent();															//Cria Antecedente
-			distanciaPerto->joinWithAND(PertoD, SeguroE);																					//Associação sensor Esquerdo com o Direito
+			distanciaPertoDireita1->joinWithAND(PertoD, SeguroE);																			//Associação sensor Esquerdo com o Direito
 		FuzzyRuleConsequent* virarEsquerda1			= new FuzzyRuleConsequent();															//Cria Consequencia
 			velocidadeInvertida->addOutput(MediaD);																							//Define a Saida Direita
 			velocidadeInvertida->addOutput(InvertidoE);																						//Define a Saida Esquerda
@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
 
 		//Regra 5
 		FuzzyRuleAntecedent* distanciaPertoDireita2 = new FuzzyRuleAntecedent();															//Cria Antecedente
-			distanciaPerto->joinWithAND(PertoD, LongeE);																					//Associação sensor Esquerdo com o Direito
+			distanciaPertoDireita2->joinWithAND(PertoD, LongeE);																			//Associação sensor Esquerdo com o Direito
 		FuzzyRuleConsequent* virarEsquerda2			= new FuzzyRuleConsequent();															//Cria Consequencia
 			velocidadeInvertida->addOutput(MediaD);																							//Define a Saida Direita
 			velocidadeInvertida->addOutput(BaixaE);																							//Define a Saida Esquerda
@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
 		
 		//Regra 6
 		FuzzyRuleAntecedent* distanciaSeguroEsquerda1 = new FuzzyRuleAntecedent();															//Cria Antecedente
-			distanciaPerto->joinWithAND(SeguroD, SeguroE);																					//Associação sensor Esquerdo com o Direito
+			distanciaSeguroEsquerda1->joinWithAND(SeguroD, SeguroE);																		//Associação sensor Esquerdo com o Direito
 		FuzzyRuleConsequent* emFrente1				  = new FuzzyRuleConsequent();															//Cria Consequencia
 			velocidadeInvertida->addOutput(MediaD);																							//Define a Saida Direita
 			velocidadeInvertida->addOutput(MediaE);																							//Define a Saida Esquerda
@@ -119,7 +119,7 @@ int main(int argc, char *argv[])
 
 		//Regra 7
 		FuzzyRuleAntecedent* distanciaSeguroEsquerda2 = new FuzzyRuleAntecedent();															//Cria Antecedente
-			distanciaPerto->joinWithAND(LongeD, SeguroE);																					//Associação sensor Esquerdo com o Direito
+			distanciaSeguroEsquerda2->joinWithAND(LongeD, SeguroE);																			//Associação sensor Esquerdo com o Direito
 		FuzzyRuleConsequent* emFrente2				  = new FuzzyRuleConsequent();															//Cria Consequencia
 			velocidadeInvertida->addOutput(MediaD);																							//Define a Saida Direita
 			velocidadeInvertida->addOutput(MediaE);																							//Define a Saida Esquerda
@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
 
 		//Regra 8
 		FuzzyRuleAntecedent* distanciaSeguroDireita = new FuzzyRuleAntecedent();															//Cria Antecedente
-			distanciaPerto->joinWithAND(SeguroD, LongeE);																					//Associação sensor Esquerdo com o Direito
+			distanciaSeguroDireita->joinWithAND(SeguroD, LongeE);																			//Associação sensor Esquerdo com o Direito
 		FuzzyRuleConsequent* emFrente3				= new FuzzyRuleConsequent();															//Cria Consequencia
 			velocidadeInvertida->addOutput(MediaD);																							//Define a Saida Direita
 			velocidadeInvertida->addOutput(MediaE);																							//Define a Saida Esquerda
@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
 
 		//Regra 9
 		FuzzyRuleAntecedent* distanciaLonge			= new FuzzyRuleAntecedent();															//Cria Antecedente
-			distanciaPerto->joinWithAND(LongeD, LongeE);																					//Associação sensor Esquerdo com o Direito
+			distanciaLonge->joinWithAND(LongeD, LongeE);																					//Associação sensor Esquerdo com o Direito
 		FuzzyRuleConsequent* emFrente4				= new FuzzyRuleConsequent();															//Cria Consequencia
 			velocidadeInvertida->addOutput(MaximaD);																						//Define a Saida Direita
 			velocidadeInvertida->addOutput(MaximaE);																						//Define a Saida Esquerda
@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
 
 
 	int cont, randomico1, randomico2;																										//VARIAVEIS SIMULAÇÃO
-	for (cont = 0; cont <= 100; cont++)
+	for (cont = 0; cont <= 30; cont++)
 	{
 		srand(time(NULL));																													
 
