@@ -24,14 +24,15 @@ float pesos_sinapticos[SAIDAS][ENTRADAS + 1] = { { 0, 0, 0, 0 },
 												 { 0, 0, 0, 0 } }; //W
 
 //Funções auxiliares
-void	ajustar_pesos_sinapticos													(int DadosEntradas[ENTRADAS + SAIDAS], int erro, int indice);
-float	calcular_net																(int DadosEntradas[ENTRADAS], int indice);
-void	mostrar_pesos_sinapticos													(int DadosEntradas[ENTRADAS]);
-int		calcular_saida																(float net);
-int		erro																		(int desejado, int saida);
-int		f_degrau																	(float saida);
-void	treinar_RNA																	();
-int		main																		()
+void	ajustar_pesos_sinapticos(int DadosEntradas[ENTRADAS + SAIDAS], int erro, int indice);
+float	calcular_net(int DadosEntradas[ENTRADAS], int indice);
+void	mostrar_pesos_sinapticos();
+int		calcular_saida(float net);
+int		erro(int desejado, int saida);
+int		f_degrau(float saida);
+void	treinar_RNA();
+
+int	main()
 {
 	int cont, DadosEntradas[ENTRADAS];
 
@@ -49,7 +50,7 @@ int		main																		()
 		treinar_RNA();
 
 		//MOSTRA OS PESOS SINAPTICOS
-		mostrar_pesos_sinapticos(DadosEntradas);
+		mostrar_pesos_sinapticos();
 
 
 		//USAR RNA
@@ -64,12 +65,12 @@ int		main																		()
 	return 0;
 }
 
-int		erro																		(int desejado, int saida)
+int	erro(int desejado, int saida)
 {
 	return desejado - saida;
 }
 
-float	calcular_net																(int DadosEntradas[ENTRADAS], int indice)
+float calcular_net(int DadosEntradas[ENTRADAS], int indice)
 {
 	int cont;
 	float net = 0;
@@ -84,7 +85,7 @@ float	calcular_net																(int DadosEntradas[ENTRADAS], int indice)
 	return net;
 }
 
-void	mostrar_pesos_sinapticos													()
+void mostrar_pesos_sinapticos()
 {
 	int i, j;
 
@@ -98,12 +99,12 @@ void	mostrar_pesos_sinapticos													()
 	printf("\n");
 }
 
-int		calcular_saida																(float net)
+int	calcular_saida(float net)
 {
 	return f_degrau(net);
 }
 
-int		f_degrau																	(float saida)
+int	f_degrau(float saida)
 {
 	if (saida > 0)
 	{
@@ -112,7 +113,7 @@ int		f_degrau																	(float saida)
 	return 0;
 }
 
-void	treinar_RNA																	()
+void treinar_RNA()
 {
 	int i, j, k, vlr_erro[SAIDAS], Saida[SAIDAS], DadosEntradas[ENTRADAS + SAIDAS];
 
@@ -145,7 +146,7 @@ void	treinar_RNA																	()
 	}
 }
 
-void	ajustar_pesos_sinapticos													(int DadosEntradas[ENTRADAS + SAIDAS], int erro, int indice)
+void ajustar_pesos_sinapticos(int DadosEntradas[ENTRADAS + SAIDAS], int erro, int indice)
 {
 	int i;
 
