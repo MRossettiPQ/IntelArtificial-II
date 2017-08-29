@@ -1,4 +1,4 @@
-// Template.c : Define o ponto de entrada para a aplicação de console.
+// Perceptron.c : Define o ponto de entrada para a aplicação de console.
 //
 
 #include <stdio.h>
@@ -32,7 +32,7 @@ int		calcular_saida																(float net);
 void	treinar_RNA																	();
 void	ajustar_pesos_sinapticos													(int DadosEntradas[ENTRADAS], int erro, int indice);
 
-int main																			()
+int		main																		()
 {
 	int cont, DadosEntradas[ENTRADAS];
 
@@ -43,6 +43,7 @@ int main																			()
 			printf("Entrada %i: ", cont);
 			scanf("%i", &DadosEntradas[cont]);
 		}
+		printf("\n");
 
 		//TREINA A REDE
 		treinar_RNA();
@@ -53,20 +54,21 @@ int main																			()
 		//USAR RNA
 		for (cont = 0; cont < SAIDAS; cont++)
 		{
-			printf("SAIDA %i DA RNA: %d\n", cont, calcular_saida(calcular_net(DadosEntradas, cont)));
+			printf("SAIDA %i DA RNA: %i\n", cont, calcular_saida(calcular_net(DadosEntradas, cont)));
 		}
+		printf("==============================================================================\n");
 	} while ((DadosEntradas[0] != -100) && (DadosEntradas[1] != -100) && (DadosEntradas[2] != -100));
 
 	system("pause");
 	return 0;
 }
 
-int erro																			(int desejado, int saida)
+int		erro																		(int desejado, int saida)
 {
 	return desejado - saida;
 }
 
-float calcular_net(int DadosEntradas[ENTRADAS], int indice)
+float	calcular_net																(int DadosEntradas[ENTRADAS], int indice)
 {
 	int cont;
 	float net = 0;
@@ -75,13 +77,13 @@ float calcular_net(int DadosEntradas[ENTRADAS], int indice)
 	//Para entrada
 	for (cont = 0; cont < ENTRADAS; cont++)
 	{
-		net += pesos_sinapticos[indice][cont + 1] * DadosEntradas[cont - 1];
+		net += pesos_sinapticos[indice][cont + 1] * DadosEntradas[cont];
 	}
 
 	return net;
 }
 
-void mostrar_pesos_sinapticos														()
+void	mostrar_pesos_sinapticos													()
 {
 	int i, j;
 
@@ -95,12 +97,12 @@ void mostrar_pesos_sinapticos														()
 	printf("\n");
 }
 
-int calcular_saida																	(float net)
+int		calcular_saida																(float net)
 {
 	return f_degrau(net);
 }
 
-int f_degrau																		(float saida)
+int		f_degrau																	(float saida)
 {
 	if (saida > 0)
 	{
@@ -109,7 +111,7 @@ int f_degrau																		(float saida)
 	return 0;
 }
 
-void treinar_RNA																	()
+void	treinar_RNA																	()
 {
 	int i, j, k, vlr_erro[SAIDAS], Saida[SAIDAS], DadosEntradas[ENTRADAS + SAIDAS];
 
@@ -133,17 +135,19 @@ void treinar_RNA																	()
 			{
 				vlr_erro[k] = erro(DadosEntradas[ENTRADAS + k], Saida[k]);
 			}
-
-			for (k = 0; k < SAIDAS; k++)
+			//Ajusta pesos sinapticos
+			if (vlr_erro[0] && vlr_erro[1])
 			{
-				//Ajusta pesos sinapticos
-				ajustar_pesos_sinapticos(DadosEntradas, vlr_erro[k], k);
+				for (k = 0; k < SAIDAS; k++)
+				{
+					ajustar_pesos_sinapticos(DadosEntradas, vlr_erro[k], k);
+				}
 			}
 		}
 	}
 }
 
-void ajustar_pesos_sinapticos														(int DadosEntradas[ENTRADAS], int erro, int indice)
+void	ajustar_pesos_sinapticos													(int DadosEntradas[ENTRADAS], int erro, int indice)
 {
 	int i;
 
