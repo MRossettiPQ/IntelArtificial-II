@@ -8,9 +8,9 @@
 #define ENTRADAS    3
 #define SAIDAS      2
 #define NR_AMOSTRAS 8
-#define EPOCAS      10000
+#define EPOCAS      100000
 #define TX_APR      0.7
-
+														//ENTRADAS SAIDAS
 int dados_treinamento[NR_AMOSTRAS][ENTRADAS + SAIDAS] = { { 0, 0, 0, 0, 0 },
 														  { 0, 0, 1, 0, 1 },
 														  { 0, 1, 0, 1, 0 },
@@ -19,19 +19,18 @@ int dados_treinamento[NR_AMOSTRAS][ENTRADAS + SAIDAS] = { { 0, 0, 0, 0, 0 },
 														  { 1, 0, 1, 0, 1 },
 														  { 1, 1, 0, 1, 0 },
 														  { 1, 1, 1, 1, 1 } };
-			
+												//BIAZ ENTRADAS
 float pesos_sinapticos[SAIDAS][ENTRADAS + 1] = { { 0, 0, 0, 0 },
 												 { 0, 0, 0, 0 } }; //W
 
 //Funções auxiliares
-int		erro																		(int desejado, int saida);
-int		f_degrau																	(float saida);
+void	ajustar_pesos_sinapticos													(int DadosEntradas[ENTRADAS + SAIDAS], int erro, int indice);
 float	calcular_net																(int DadosEntradas[ENTRADAS], int indice);
 void	mostrar_pesos_sinapticos													(int DadosEntradas[ENTRADAS]);
 int		calcular_saida																(float net);
+int		erro																		(int desejado, int saida);
+int		f_degrau																	(float saida);
 void	treinar_RNA																	();
-void	ajustar_pesos_sinapticos													(int DadosEntradas[ENTRADAS], int erro, int indice);
-
 int		main																		()
 {
 	int cont, DadosEntradas[ENTRADAS];
@@ -45,14 +44,16 @@ int		main																		()
 		}
 		printf("\n");
 
+
 		//TREINA A REDE
 		treinar_RNA();
 
 		//MOSTRA OS PESOS SINAPTICOS
 		mostrar_pesos_sinapticos(DadosEntradas);
 
+
 		//USAR RNA
-		for (cont = 0; cont < SAIDAS; cont++)
+		for (cont = 0; cont < SAIDAS; cont++) //REPETE A QUANTIDADE DE SAIDAS QUE POSSUI
 		{
 			printf("SAIDA %i DA RNA: %i\n", cont, calcular_saida(calcular_net(DadosEntradas, cont)));
 		}
@@ -115,9 +116,9 @@ void	treinar_RNA																	()
 {
 	int i, j, k, vlr_erro[SAIDAS], Saida[SAIDAS], DadosEntradas[ENTRADAS + SAIDAS];
 
-	for (i = 0; i < EPOCAS; i++)
+	for (i = 0; i < EPOCAS; i++)//REPETE O NUMERO DE ERAS DESEJADO
 	{
-		for (j = 0; j < NR_AMOSTRAS; j++)
+		for (j = 0; j < NR_AMOSTRAS; j++)//REPETE PARA O NUMERO DE AMOSTRAS
 		{
 			for (k = 0; k < (ENTRADAS + SAIDAS); k++)
 			{
@@ -130,24 +131,21 @@ void	treinar_RNA																	()
 				Saida[k] = calcular_saida(calcular_net(DadosEntradas, k));
 			}
 
-			//VERIFICAÇÃO ERRO 0 1 2 3 4
+			//VERIFICAÇÃO ERRO
 			for (k = 0; k < SAIDAS; k++)
 			{
 				vlr_erro[k] = erro(DadosEntradas[ENTRADAS + k], Saida[k]);
 			}
 			//Ajusta pesos sinapticos
-			if (vlr_erro[0] && vlr_erro[1])
+			for (k = 0; k < SAIDAS; k++)
 			{
-				for (k = 0; k < SAIDAS; k++)
-				{
-					ajustar_pesos_sinapticos(DadosEntradas, vlr_erro[k], k);
-				}
+				ajustar_pesos_sinapticos(DadosEntradas, vlr_erro[k], k);
 			}
 		}
 	}
 }
 
-void	ajustar_pesos_sinapticos													(int DadosEntradas[ENTRADAS], int erro, int indice)
+void	ajustar_pesos_sinapticos													(int DadosEntradas[ENTRADAS + SAIDAS], int erro, int indice)
 {
 	int i;
 
