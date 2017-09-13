@@ -1,186 +1,285 @@
-﻿/*
-Rede Neural Multilayer Peceptron - Problema do XOR
-*/
-
-#include <stdio.h>
+﻿#include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 
-#define ENTRADAS    2
-#define SAIDAS      1
-#define BIAS        1
-#define NR_AMOSTRAS 4
-#define NR_NEURO_OC 3
-#define TX_APREND   0.8
-#define EPOCAS      10000
+#define ENTRADAS        6
+#define SAIDAS          1
+#define NR_AMOSTRAS     26
+#define NR_NEURON_O     8
+#define EPOCAS          10000
+#define TX_APRENDIZADO  1
+#define MOMENTUM        0.3
+#define ZERO_TEST       0
 
 
-int dados_treinamento[NR_AMOSTRAS][ENTRADAS + SAIDAS] = { { 0, 0, 0 },
-{ 0, 1, 1 },
-{ 1, 0, 1 },
-{ 1, 1, 0 } };
+/*
+Dados para o treinamento da rede
+*/
+int cj_treinamento[NR_AMOSTRAS][ENTRADAS + SAIDAS] = {  { 1, 0, 0, 0, 0, 0, 65 }, //A
+														{ 1, 0, 1, 0, 0, 0, 66 }, //B
+														{ 1, 1, 0, 0, 0, 0, 67 }, //C
+														{ 1, 1, 0, 1, 0, 0, 68 }, //D
+														{ 1, 0, 0, 1, 0, 0, 69 }, //E
+														{ 1, 1, 1, 0, 0, 0, 70 }, //F
+														{ 1, 1, 1, 1, 0, 0, 71 }, //G
+														{ 1, 0, 1, 1, 0, 0, 72 }, //H
+														{ 0, 1, 1, 0, 0, 0, 73 }, //I
+														{ 0, 1, 1, 1, 0, 0, 74 }, //J
+														{ 1, 0, 0, 0, 1, 0, 75 }, //K
+														{ 1, 0, 1, 0, 1, 0, 74 }, //L
+														{ 1, 1, 0, 0, 1, 0, 77 }, //M
+														{ 1, 1, 0, 1, 1, 0, 78 }, //N
+														{ 1, 0, 0, 1, 1, 0, 79 }, //O
+														{ 1, 1, 1, 0, 1, 0, 80 }, //P
+														{ 1, 1, 1, 1, 1, 0, 81 }, //Q
+														{ 1, 0, 1, 1, 1, 0, 82 }, //R
+														{ 0, 1, 1, 0, 1, 0, 83 }, //S
+														{ 0, 1, 1, 1, 1, 0, 84 }, //T
+														{ 1, 0, 0, 0, 1, 1, 85 }, //U
+														{ 1, 0, 1, 0, 1, 1, 86 }, //V
+														{ 0, 1, 1, 1, 0, 1, 87 }, //W
+														{ 1, 1, 0, 0, 1, 1, 88 }, //X
+														{ 1, 1, 0, 1, 1, 1, 89 }, //Y
+														{ 1, 0, 0, 1, 1, 1, 90 }};//Z
 
-float w_entrada_oculta[ENTRADAS + BIAS][NR_NEURO_OC];
-float w_oculta_saida[NR_NEURO_OC + BIAS][SAIDAS];
-float sinal_saida[SAIDAS];
-float sinal_oculta[NR_NEURO_OC];
-float delta_saida[SAIDAS];
-float delta_oculta[NR_NEURO_OC];
-float gradiente_oculta[NR_NEURO_OC];
+
+/* Variaveis globais */
+double w_e_o[ENTRADAS + 1][NR_NEURON_O];
+double w_o_s[NR_NEURON_O + 1][SAIDAS];
+double saida_o[NR_NEURON_O];
+double saida_s[SAIDAS];
+double delta_saida[SAIDAS];
+double gradiente_oculta[NR_NEURON_O];
+double delta_oculta[NR_NEURON_O];
+double media_erro = 0.0;
 
 
-float erro(float desejado, float obtido);
-float sigmoid(float sinal);
-void inicializa_pesos_sinapticos();
-void mostra_pesos_sinapticos();
-void treinar_rede();
-void feedforward(int entradas[ENTRADAS]);
-void calcular_delta_saida(float desejado);
-void calcular_gradiente_oculta();
+/* Cabeçalho das funções auxiliares */
+void inicializa_sinapses();
+int gera_nr_aleatorios();
+void mostrar_sinapses();
+double f_sigmoid(double net);
+void calcular_saidas(double entradas[ENTRADAS]);
+void treinar_RNA();
+double calcular_erro(double desejado, double saida);
+void menu();
+void calcular_delta_saida(double desejado);
 void calcular_delta_oculta();
-void corrigir_pesos_sinapticos(int entradas[ENTRADAS]);
+void calcular_gradiente_oculta();
+void ajustar_pesos_sinapticos(double entradas[ENTRADAS]);
+void gravar_pesos_sinapticos();
+void restaurar_pesos_sinapticos();
 
-
+/* Função principal */
 int main()
 {
-	int opc, entradas[ENTRADAS];
+	int opcao = 0, cont;
+	double entradas[ENTRADAS];
 
-	inicializa_pesos_sinapticos();
 
-	while (1) {
-		printf("Rede MLP ... XOR\n");
+	while (opcao != 4)
+	{
+		printf("\nRede Neural Perceptron de Multiplas Camadas\n");
+		printf("Problema do OU EXCLUSIVO - XOR\n");
+		printf("*******************************************\n\n");
 		printf("1.Treinar a rede\n");
 		printf("2.Usar a rede\n");
-		printf("3.Mostrar pesos sinapticos\n");
-		printf("4.Sair do programa\n");
-		printf("Opcao: ");
-		scanf("%d", &opc);
+		printf("3.Ver pesos sinapticos\n");
+		printf("4.Sair\n");
+		printf("Opcao? ");
+		scanf("%d", &opcao);
 
-		switch (opc) {
-		case 1: treinar_rede();
-			break;
-		case 2: printf("Entrada 1.....: ");
-			scanf("%f", &entradas[0]);
-			printf("Entrada 2.....: ");
-			scanf("%f", &entradas[1]);
-			feedforward(entradas);
-			printf("Saida da RNA..: %.2f\n", sinal_saida[0]);
-			break;
-		case 3: mostra_pesos_sinapticos();
-			break;
-		case 4: exit(0);
+		switch (opcao)
+		{
+			case 1: inicializa_sinapses();
+				treinar_RNA();
+				break;
+
+			case 2:
+				for (cont = 0; cont < ENTRADAS; cont++)
+				{
+					printf("Entrada %i: ", cont);
+					scanf("%lf", &entradas[cont]);
+				}
+				calcular_saidas(entradas);
+
+				for (cont = 0; cont < SAIDAS; cont++)
+				{
+					printf("\nResposta %i: %d \n", cont + 1, (saida_s[cont] / 1000));
+
+					printf("\nResposta %i: %c \n", cont + 1, (saida_s[cont] / 1000));
+				}
+				break;
+
+			case 3: mostrar_sinapses();
+				break;
+
+			case 4: exit(0);
 		}
 	}
-
 	return 0;
 }
 
-float erro(float desejado, float obtido)
-{
-	return desejado - obtido;
-}
-
-float sigmoid(float sinal)
-{
-	return 1 / (1 + exp(-sinal));
-}
-
-void inicializa_pesos_sinapticos()
+void inicializa_sinapses()
 {
 	int i, j;
-	for (i = 0; i < ENTRADAS + BIAS; i++)
-		for (j = 0; j < NR_NEURO_OC; j++)
-			w_entrada_oculta[i][j] = 0.0;
 
-	for (i = 0; i < NR_NEURO_OC + BIAS; i++)
-		for (j = 0; j < SAIDAS; j++)
-			w_oculta_saida[i][j] = 0.0;
+	// Inicializa pesos sin�pticos da entrada para a camada oculta
+	for (i = 0; i < ENTRADAS + 1; i++) 
+	{
+		for (j = 0; j < NR_NEURON_O; j++) 
+		{
+			#if ZERO_TEST
+				w_e_o[i][j] = 0.0;
+			#else
+					w_e_o[i][j] = gera_nr_aleatorios();
+			#endif
+		}
+	}
+
+	// Inicializa pesos sin�pticos da camada oculta para a sa�da
+	for (i = 0; i < NR_NEURON_O + 1; i++) 
+	{
+		for (j = 0; j < SAIDAS; j++) 
+		{
+			#if ZERO_TEST
+						w_o_s[i][j] = 0.0;
+			#else
+						w_o_s[i][j] = gera_nr_aleatorios();
+			#endif
+		}
+	}
 
 }
 
-void mostra_pesos_sinapticos()
+int gera_nr_aleatorios()
+{
+	int numeros[2] = { -1, 1 };
+	// Retorna -1 ou 1
+	return (numeros[rand() % 2]);
+}
+
+void mostrar_sinapses()
 {
 	int i, j;
-	for (i = 0; i < ENTRADAS + BIAS; i++) {
-		for (j = 0; j < NR_NEURO_OC; j++)
-			printf("%.2f ", w_entrada_oculta[i][j]);
+
+	// Inicializa pesos sin�pticos da entrada para a camada oculta
+	for (i = 0; i < ENTRADAS + 1; i++) 
+	{
+		for (j = 0; j < NR_NEURON_O; j++) 
+		{
+			printf("w_e_o[%d][%d]: %f ", i, j, w_e_o[i][j]);
+		}
 		printf("\n");
 	}
 
-	for (i = 0; i < NR_NEURO_OC + BIAS; i++) {
-		for (j = 0; j < SAIDAS; j++)
-			printf("%.2f ", w_oculta_saida[i][j]);
+	// Inicializa pesos sin�pticos da camada oculta para a sa�da
+	for (i = 0; i < NR_NEURON_O + 1; i++) 
+	{
+		for (j = 0; j < SAIDAS; j++) 
+		{
+			printf("w_o_s[%d][%d]: %f ", i, j, w_o_s[i][j]);
+		}
 		printf("\n");
 	}
 }
 
-void treinar_rede()
+double f_sigmoid(double net)
 {
-	int i, j, k, entradas[ENTRADAS];
+	return 1 / (1 + exp(-net));
+}
 
-	for (i = 0; i < EPOCAS; i++) {
-		for (j = 0; j < NR_AMOSTRAS; j++) {
-			// Carrega dados de entrada
-			for (k = 0; k < ENTRADAS; k++) {
-				entradas[k] = dados_treinamento[j][k];
+void calcular_saidas(double entradas[ENTRADAS])
+{
+	int i, j;
+
+	// Calcular os nets da entrada para a camada oculta
+	for (i = 0; i < NR_NEURON_O; i++) 
+	{
+		saida_o[i] = 0.0;
+		saida_o[i] += w_e_o[0][i] * 1;  // Calcula saida para bias
+
+		for (j = 1; j < ENTRADAS + 1; j++) 
+		{
+			saida_o[i] += w_e_o[j][i] * entradas[j - 1];
+		}
+
+		// Calcular a saida de saida_o[i]
+		saida_o[i] = f_sigmoid(saida_o[i]);
+	}
+
+	// Calcular os nets da camada oculta para a sa�da
+	for (i = 0; i < SAIDAS; i++) 
+	{
+		saida_s[i] = 0.0;
+		saida_s[i] += w_o_s[0][i] * 1;  // Calcula saida para bias
+
+		for (j = 1; j < NR_NEURON_O + 1; j++) 
+		{
+			saida_s[i] += w_o_s[j][i] * saida_o[j - 1];
+		}
+
+		saida_s[i] = f_sigmoid(saida_s[i]);
+	}
+}
+
+void treinar_RNA()
+{
+	int i, j, k;
+	double entradas[ENTRADAS];
+
+	for (i = 1; i <= EPOCAS; i++) 
+	{
+
+		for (j = 0; j < NR_AMOSTRAS; j++) 
+		{
+			for (k = 0; k < ENTRADAS; k++)
+			{
+				entradas[k] = cj_treinamento[j][k];
 			}
-			// Calcula sinal de saida de todos os neur�nios da camada de sa�da
-			feedforward(entradas);
-			// Calcular delta da saida
-			calcular_delta_saida(dados_treinamento[j][k]);
-			// Calcular gradiente da sa�da
+
+			// Feedforward
+			calcular_saidas(entradas);
+
+			// Backward (backpropagation)
+			for (k = 0; k < SAIDAS; k++)
+			{
+				calcular_delta_saida(cj_treinamento[j][k]);
+			}
 			calcular_gradiente_oculta();
-			// Calcular delta oculta
 			calcular_delta_oculta();
-			// Ajustar pesos sin�pticos
-			corrigir_pesos_sinapticos(entradas);
+			ajustar_pesos_sinapticos(entradas);
 		}
+
 	}
+
+	// Mostra media dos erros
+	printf("RNA TREINADA - Media dos erros: %lf\n", media_erro);
 }
 
-
-void feedforward(int entradas[ENTRADAS])
+double calcular_erro(double desejado, double saida)
 {
-	int i, j;
-
-	for (j = 0; j < NR_NEURO_OC; j++) {
-		sinal_oculta[j] = 0.0;
-		// Calcula saida bias
-		sinal_oculta[j] += w_entrada_oculta[0][j] * BIAS;
-		for (i = 1; i < ENTRADAS + BIAS; i++) {
-			sinal_oculta[j] += w_entrada_oculta[i][j] * entradas[i - 1];
-		}
-		sinal_oculta[j] = sigmoid(sinal_oculta[j]);
-	}
-
-	// Calcular sa�da da camada de sa�da
-	for (j = 0; j < SAIDAS; j++) {
-		sinal_saida[j] = 0.0;
-		// Calcula saida bias
-		sinal_saida[j] += w_oculta_saida[0][j] * BIAS;
-		for (i = 1; i < NR_NEURO_OC + BIAS; i++) {
-			sinal_saida[j] += w_oculta_saida[i][j] * sinal_oculta[i - 1];
-		}
-		sinal_saida[j] = sigmoid(sinal_saida[j]);
-	}
+	return desejado - saida;
 }
 
-void calcular_delta_saida(float desejado)
+void calcular_delta_saida(double desejado)
 {
 	int i;
-
-	for (i = 0; i < SAIDAS; i++) {
-		delta_saida[i] = erro(desejado, sinal_saida[i]) * (1 - sinal_saida[i] * sinal_saida[i]);
-	}
+	for (i = 0; i < SAIDAS; i++)
+	{
+		delta_saida[i] = calcular_erro(desejado, saida_s[i]) * (1 - saida_s[i] * saida_s[i]);
+	}		
 }
 
 void calcular_gradiente_oculta()
 {
 	int i, j;
 
-	for (i = 0; i < SAIDAS; i++) {
-		for (j = 1; j < NR_NEURO_OC + BIAS; j++) {
-			gradiente_oculta[j - 1] = delta_saida[i] * w_oculta_saida[j][i];
+	for (i = 0; i < SAIDAS; i++) 
+	{
+		for (j = 1; j < NR_NEURON_O + 1; j++) 
+		{
+			gradiente_oculta[j - 1] = delta_saida[i] * w_o_s[j][i];
 		}
 	}
 }
@@ -188,32 +287,34 @@ void calcular_gradiente_oculta()
 void calcular_delta_oculta()
 {
 	int i;
-
-	for (i = 0; i < NR_NEURO_OC; i++)
-		delta_oculta[i] = gradiente_oculta[i] * sinal_oculta[i] * (1 - sinal_oculta[i]);
+	for (i = 0; i < NR_NEURON_O; i++)
+	{ 
+		delta_oculta[i] = gradiente_oculta[i] * saida_o[i] * (1 - saida_o[i]);
+	}
+		
 }
 
-void corrigir_pesos_sinapticos(int entradas[ENTRADAS])
+void ajustar_pesos_sinapticos(double entradas[ENTRADAS])
 {
 	int i, j;
 
-	// Ajustar pesos sin�pticos da sa�da para a camada oculta
-	for (j = 0; j < SAIDAS; j++) {
-		// Ajusta w para bias
-		w_oculta_saida[0][j] = w_oculta_saida[0][j] + TX_APREND * delta_saida[j] * BIAS;
-		for (i = 1; i < NR_NEURO_OC + BIAS; i++) {
-			// Ajusta w para os demais neur�nios
-			w_oculta_saida[i][j] = w_oculta_saida[i][j] + TX_APREND * delta_saida[j] * sinal_oculta[i - 1];
+	// Ajusta os pesos sin�pticos da camada intermedi�ria para a camada de sa�da
+	for (i = 0; i < SAIDAS; i++) 
+	{
+		w_o_s[0][i] = w_o_s[0][i] + TX_APRENDIZADO * delta_saida[i] * 1;
+		for (j = 1; j < NR_NEURON_O + 1; j++) 
+		{
+			w_o_s[j][i] = w_o_s[j][i] + TX_APRENDIZADO * delta_saida[i] * saida_o[j - 1];
 		}
 	}
 
-	// Ajustar pesos sin�pticos da camada oculta para a camada de entrada
-	for (j = 0; j < NR_NEURO_OC; j++) {
-		// Ajusta w para bias
-		w_entrada_oculta[0][j] = w_entrada_oculta[0][j] + TX_APREND * delta_oculta[j] * BIAS;
-		for (i = 1; i < ENTRADAS + BIAS; i++) {
-			// Ajusta w para os demais neur�nios
-			w_entrada_oculta[i][j] = w_entrada_oculta[i][j] + TX_APREND * delta_oculta[j] * entradas[i - 1];
+	// Ajusta os pesos sin�pticos da camada de saida para a camada intermedi�ria
+	for (i = 0; i < NR_NEURON_O; i++) 
+	{
+		w_e_o[0][i] = w_e_o[0][i] + TX_APRENDIZADO * delta_oculta[i] * 1;
+		for (j = 1; j < ENTRADAS + 1; j++) 
+		{
+			w_e_o[j][i] = w_e_o[j][i] + TX_APRENDIZADO * delta_oculta[i] * entradas[j - 1];
 		}
 	}
 }
