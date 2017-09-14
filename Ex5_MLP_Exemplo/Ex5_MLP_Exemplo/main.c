@@ -6,9 +6,9 @@
 #define SAIDAS          1
 #define NR_AMOSTRAS     26
 #define NR_NEURON_O     8
-#define EPOCAS          10000
+#define EPOCAS          100000
 #define TX_APRENDIZADO  1
-#define MOMENTUM        0.3
+#define MOMENTUM        0.9
 #define ZERO_TEST       0
 
 
@@ -26,7 +26,7 @@ double cj_treinamento[NR_AMOSTRAS][ENTRADAS + SAIDAS] = { { 1, 0, 0, 0, 0, 0, 0.
 { 0, 1, 1, 0, 0, 0, 0.73 }, //I
 { 0, 1, 1, 1, 0, 0, 0.74 }, //J
 { 1, 0, 0, 0, 1, 0, 0.75 }, //K
-{ 1, 0, 1, 0, 1, 0, 0.74 }, //L
+{ 1, 0, 1, 0, 1, 0, 0.76 }, //L
 { 1, 1, 0, 0, 1, 0, 0.77 }, //M
 { 1, 1, 0, 1, 1, 0, 0.78 }, //N
 { 1, 0, 0, 1, 1, 0, 0.79 }, //O
@@ -76,19 +76,20 @@ int main()
 	double entradas[ENTRADAS];
 
 
+	inicializa_sinapses();
+	treinar_RNA();
+
 	while (opcao != 4)
 	{
 		printf("\nRede Neural Perceptron de Multiplas Camadas\n");
 		printf("Problema do OU EXCLUSIVO - XOR\n");
 		printf("*******************************************\n\n");
-		printf("1.Usar a rede\n");
-		printf("2.Ver pesos sinapticos\n");
-		printf("3.Sair\n");
-		printf("Opcao? ");
-			scanf("%d", &opcao);
-
-		inicializa_sinapses();
-		treinar_RNA();
+		//printf("1.Usar a rede\n");
+		//printf("2.Ver pesos sinapticos\n");
+		//printf("3.Sair\n");
+		//printf("Opcao? ");
+		//	scanf("%d", &opcao);
+			opcao = 1;
 		switch (opcao)
 		{
 			case 1:
@@ -100,7 +101,7 @@ int main()
 				calcular_saidas(entradas);
 				for (cont = 0; cont < SAIDAS; cont++)
 				{
-					resposta = saida_s[cont] * 100;
+					resposta = saida_s[cont] * 101;
 					printf("\nResposta %i (em numero): %i\n", cont + 1, resposta);
 					printf("\nResposta %i (em letras): %c\n", cont + 1, resposta);
 				}
