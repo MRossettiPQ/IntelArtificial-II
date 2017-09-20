@@ -3,45 +3,50 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define ENTRADAS        6
-#define SAIDAS          1
-#define NR_AMOSTRAS     26
-#define NR_NEURON_O     8
-#define EPOCAS          100000	
+#define ENTRADAS        1
+#define SAIDAS          2
+#define NR_AMOSTRAS     31
+#define NR_NEURON_O     4
+#define EPOCAS          100000
 #define TX_APRENDIZADO  1
 #define MOMENTUM        0.9
 #define ZERO_TEST       0
 
 
 /* Dados para o treinamento da rede */
-double cj_treinamento[NR_AMOSTRAS][ENTRADAS + SAIDAS] = 
-{ 
-	{ 1, 0, 0, 0, 0, 0, 0.65 }, //A
-	{ 1, 0, 1, 0, 0, 0, 0.66 }, //B
-	{ 1, 1, 0, 0, 0, 0, 0.67 }, //C
-	{ 1, 1, 0, 1, 0, 0, 0.68 }, //D
-	{ 1, 0, 0, 1, 0, 0, 0.69 }, //E
-	{ 1, 1, 1, 0, 0, 0, 0.70 }, //F
-	{ 1, 1, 1, 1, 0, 0, 0.71 }, //G
-	{ 1, 0, 1, 1, 0, 0, 0.72 }, //H
-	{ 0, 1, 1, 0, 0, 0, 0.73 }, //I
-	{ 0, 1, 1, 1, 0, 0, 0.74 }, //J
-	{ 1, 0, 0, 0, 1, 0, 0.75 }, //K
-	{ 1, 0, 1, 0, 1, 0, 0.76 }, //L
-	{ 1, 1, 0, 0, 1, 0, 0.77 }, //M
-	{ 1, 1, 0, 1, 1, 0, 0.78 }, //N
-	{ 1, 0, 0, 1, 1, 0, 0.79 }, //O
-	{ 1, 1, 1, 0, 1, 0, 0.80 }, //P
-	{ 1, 1, 1, 1, 1, 0, 0.81 }, //Q
-	{ 1, 0, 1, 1, 1, 0, 0.82 }, //R
-	{ 0, 1, 1, 0, 1, 0, 0.83 }, //S
-	{ 0, 1, 1, 1, 1, 0, 0.84 }, //T
-	{ 1, 0, 0, 0, 1, 1, 0.85 }, //U
-	{ 1, 0, 1, 0, 1, 1, 0.86 }, //V
-	{ 0, 1, 1, 1, 0, 1, 0.87 }, //W
-	{ 1, 1, 0, 0, 1, 1, 0.88 }, //X
-	{ 1, 1, 0, 1, 1, 1, 0.89 }, //Y
-	{ 1, 0, 0, 1, 1, 1, 0.90 }  //Z
+double cj_treinamento[NR_AMOSTRAS][ENTRADAS + SAIDAS] =
+{
+	{ 0.05, 0.197, 0.122 }, //5 cm - Baixo
+	{ 0.10, 0.172, 0.122 }, //10 cm
+	{ 0.11, 0.167, 0.122 }, //11 cm	
+	{ 0.20, 0.122, 0.122 }, //20 cm - Equilibrio
+	{ 0.21, 0.122, 0.127 }, //21 cm
+	{ 0.22, 0.122, 0.132 }, //22 cm
+	{ 0.23, 0.122, 0.137 }, //23 cm
+	{ 0.12, 0.162, 0.122 }, //12 cm
+	{ 0.13, 0.157, 0.122 }, //13 cm	
+	{ 0.26, 0.122, 0.152 }, //26 cm
+	{ 0.27, 0.122, 0.157 }, //27 cm
+	{ 0.28, 0.122, 0.162 }, //28 cm
+	{ 0.29, 0.122, 0.167 }, //29 cm
+	{ 0.30, 0.122, 0.172 }, //30 cm
+	{ 0.31, 0.122, 0.177 }, //31 cm
+	{ 0.17, 0.137, 0.122 }, //17 cm
+	{ 0.18, 0.132, 0.122 }, //18 cm
+    { 0.19, 0.127, 0.122 }, //19 cm
+	{ 0.24, 0.122, 0.142 }, //24 cm
+	{ 0.25, 0.122, 0.147 }, //25 cm	
+	{ 0.06, 0.192, 0.122 }, //6 cm
+	{ 0.08, 0.182, 0.122 }, //8 cm
+	{ 0.09, 0.177, 0.122 }, //9 cm
+	{ 0.07, 0.187, 0.122 }, //7 cm	
+	{ 0.14, 0.152, 0.122 }, //14 cm
+	{ 0.15, 0.147, 0.122 }, //15 cm
+	{ 0.16, 0.142, 0.122 }, //16 cm
+	{ 0.32, 0.122, 0.182 }, //32 cm
+	{ 0.33, 0.122, 0.187 }, //33 cm
+	{ 0.34, 0.122, 0.192 }, //34 cm
+	{ 0.35, 0.122, 0.197 }  //35 cm - Alto
 };
 
 /* Variaveis globais */
@@ -74,14 +79,16 @@ void restaurar_pesos_sinapticos();
 /* Função principal */
 int main()
 {
-	int opcao = 0, cont, resposta;
+	int opcao = 0, cont;
+	double resposta = 0;
 	double entradas[ENTRADAS];
 
 
 	inicializa_sinapses();
 	treinar_RNA();
 
-	while (opcao != 4)
+
+	while (opcao != 3)
 	{
 		printf("\nRede Neural Perceptron de Multiplas Camadas\n");
 		printf("Problema do OU EXCLUSIVO - XOR\n");
@@ -90,29 +97,30 @@ int main()
 		printf("2.Ver pesos sinapticos\n");
 		printf("3.Sair\n");
 		printf("Opcao? ");
-			scanf("%d", &opcao);
-			opcao = 1;
+		scanf("%d", &opcao);
 		switch (opcao)
 		{
-			case 1:
-				for (cont = 0; cont < ENTRADAS; cont++)
-				{
-					printf("Entrada %i: ", cont);
-						scanf("%lf", &entradas[cont]);
-				}
-				calcular_saidas(entradas);
-				for (cont = 0; cont < SAIDAS; cont++)
-				{
-					resposta = saida_s[cont] * 101;
-					printf("\nResposta %i (em numero): %i\n", cont + 1, resposta);
-					printf("\nResposta %i (em letras): %c\n", cont + 1, resposta);
-				}
-				break;
+		case 1:
+			for (cont = 0; cont < ENTRADAS; cont++)
+			{
+				printf("Entrada %i: ", cont + 1);
+				scanf("%lf", &entradas[cont]);
+				entradas[cont] = entradas[cont] / 100;
+			}
+			calcular_saidas(entradas);
+			for (cont = 0; cont < SAIDAS; cont++)
+			{
+				resposta = saida_s[cont] * 1000;
+				printf("\nResposta %i (Sem Converter): %g\n", cont + 1, saida_s[cont]);
+				printf("\nResposta %i (em PWM): %g\n", cont + 1, resposta);
+				resposta = 0;
+			}
+			break;
 
-			case 2: mostrar_sinapses();
-				break;
+		case 2: mostrar_sinapses();
+			break;
 
-			case 3: exit(0);
+		case 3: exit(0);
 		}
 	}
 	return 0;
@@ -128,9 +136,9 @@ void inicializa_sinapses()
 		for (j = 0; j < NR_NEURON_O; j++)
 		{
 			#if ZERO_TEST
-				w_e_o[i][j] = 0.0;
+						w_e_o[i][j] = 0.0;
 			#else
-				w_e_o[i][j] = gera_nr_aleatorios();
+						w_e_o[i][j] = gera_nr_aleatorios();
 			#endif
 		}
 	}
@@ -140,9 +148,9 @@ void inicializa_sinapses()
 		for (j = 0; j < SAIDAS; j++)
 		{
 			#if ZERO_TEST
-				w_o_s[i][j] = 0.0;
+						w_o_s[i][j] = 0.0;
 			#else
-				w_o_s[i][j] = gera_nr_aleatorios();
+						w_o_s[i][j] = gera_nr_aleatorios();
 			#endif
 		}
 	}
@@ -224,7 +232,7 @@ void calcular_saidas(double entradas[ENTRADAS])
 
 void treinar_RNA()
 {
-	int i, j, k;
+	int i, j, k, l;
 	double entradas[ENTRADAS];
 
 	for (i = 1; i <= EPOCAS; i++)
@@ -241,7 +249,10 @@ void treinar_RNA()
 			calcular_saidas(entradas);
 
 			// Backward (backpropagation)
-			calcular_delta_saida(cj_treinamento[j][6]);
+			for (l = 0; l < SAIDAS; l++)
+			{
+				calcular_delta_saida(cj_treinamento[j][k + l]);
+			}
 			calcular_gradiente_oculta();
 			calcular_delta_oculta();
 			ajustar_pesos_sinapticos(entradas);
