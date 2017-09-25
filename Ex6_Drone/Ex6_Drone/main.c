@@ -27,13 +27,15 @@ double cj_treinamento[NR_AMOSTRAS][ENTRADAS + SAIDAS] =
 	{ 0.13, 0.157, 0.122 }, //13 cm	
 	{ 0.26, 0.122, 0.152 }, //26 cm
 	{ 0.27, 0.122, 0.157 }, //27 cm
-	{ 0.28, 0.122, 0.162 }, //28 cm
-	{ 0.29, 0.122, 0.167 }, //29 cm
 	{ 0.30, 0.122, 0.172 }, //30 cm
 	{ 0.31, 0.122, 0.177 }, //31 cm
 	{ 0.17, 0.137, 0.122 }, //17 cm
 	{ 0.18, 0.132, 0.122 }, //18 cm
-    { 0.19, 0.127, 0.122 }, //19 cm
+	{ 0.19, 0.127, 0.122 }, //19 cm
+	{ 0.33, 0.122, 0.187 }, //33 cm
+	{ 0.28, 0.122, 0.162 }, //28 cm
+	{ 0.29, 0.122, 0.167 }, //29 cm
+	{ 0.34, 0.122, 0.192 }, //34 cm
 	{ 0.24, 0.122, 0.142 }, //24 cm
 	{ 0.25, 0.122, 0.147 }, //25 cm	
 	{ 0.06, 0.192, 0.122 }, //6 cm
@@ -44,8 +46,6 @@ double cj_treinamento[NR_AMOSTRAS][ENTRADAS + SAIDAS] =
 	{ 0.15, 0.147, 0.122 }, //15 cm
 	{ 0.16, 0.142, 0.122 }, //16 cm
 	{ 0.32, 0.122, 0.182 }, //32 cm
-	{ 0.33, 0.122, 0.187 }, //33 cm
-	{ 0.34, 0.122, 0.192 }, //34 cm
 	{ 0.35, 0.122, 0.197 }  //35 cm - Alto
 };
 
@@ -59,7 +59,6 @@ double gradiente_oculta[NR_NEURON_O];
 double delta_oculta[NR_NEURON_O];
 double media_erro = 0.0;
 
-
 /* Cabeçalho das funções auxiliares */
 void inicializa_sinapses();
 int gera_nr_aleatorios();
@@ -69,7 +68,7 @@ void calcular_saidas(double entradas[ENTRADAS]);
 void treinar_RNA();
 double calcular_erro(double desejado, double saida);
 void menu();
-void calcular_delta_saida(double desejado);
+void calcular_delta_saida(double desejado, int indice);
 void calcular_delta_oculta();
 void calcular_gradiente_oculta();
 void ajustar_pesos_sinapticos(double entradas[ENTRADAS]);
@@ -135,11 +134,11 @@ void inicializa_sinapses()
 	{
 		for (j = 0; j < NR_NEURON_O; j++)
 		{
-			#if ZERO_TEST
-						w_e_o[i][j] = 0.0;
-			#else
-						w_e_o[i][j] = gera_nr_aleatorios();
-			#endif
+#if ZERO_TEST
+			w_e_o[i][j] = 0.0;
+#else
+			w_e_o[i][j] = gera_nr_aleatorios();
+#endif
 		}
 	}
 	// Inicializa pesos sin�pticos da camada oculta para a sa�da
@@ -147,11 +146,11 @@ void inicializa_sinapses()
 	{
 		for (j = 0; j < SAIDAS; j++)
 		{
-			#if ZERO_TEST
-						w_o_s[i][j] = 0.0;
-			#else
-						w_o_s[i][j] = gera_nr_aleatorios();
-			#endif
+#if ZERO_TEST
+			w_o_s[i][j] = 0.0;
+#else
+			w_o_s[i][j] = gera_nr_aleatorios();
+#endif
 		}
 	}
 
@@ -251,13 +250,12 @@ void treinar_RNA()
 			// Backward (backpropagation)
 			for (l = 0; l < SAIDAS; l++)
 			{
-				calcular_delta_saida(cj_treinamento[j][k + l]);
+				calcular_delta_saida(cj_treinamento[j][k + l], l);
+				calcular_gradiente_oculta();
+				calcular_delta_oculta();
+				ajustar_pesos_sinapticos(entradas);
 			}
-			calcular_gradiente_oculta();
-			calcular_delta_oculta();
-			ajustar_pesos_sinapticos(entradas);
 		}
-
 	}
 	// Mostra media dos erros
 	printf("RNA TREINADA - Media dos erros: %lf\n", media_erro);
@@ -268,13 +266,10 @@ double calcular_erro(double desejado, double saida)
 	return desejado - saida;
 }
 
-void calcular_delta_saida(double desejado)
+void calcular_delta_saida(double desejado, int indice)
 {
 	int i;
-	for (i = 0; i < SAIDAS; i++)
-	{
-		delta_saida[i] = calcular_erro(desejado, saida_s[i]) * (1 - saida_s[i] * saida_s[i]);
-	}
+	delta_saida[indice] = calcular_erro(desejado, saida_s[indice]) * (1 - saida_s[indice] * saida_s[indice]);
 }
 
 void calcular_gradiente_oculta()
