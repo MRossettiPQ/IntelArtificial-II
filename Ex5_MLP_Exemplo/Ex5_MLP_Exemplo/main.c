@@ -64,7 +64,7 @@ void calcular_saidas(double entradas[ENTRADAS]);
 void treinar_RNA();
 double calcular_erro(double desejado, double saida);
 void menu();
-void calcular_delta_saida(double desejado);
+void calcular_delta_saida(double desejado, int indice);
 void calcular_delta_oculta();
 void calcular_gradiente_oculta();
 void ajustar_pesos_sinapticos(double entradas[ENTRADAS]);
@@ -224,7 +224,7 @@ void calcular_saidas(double entradas[ENTRADAS])
 
 void treinar_RNA()
 {
-	int i, j, k;
+	int i, j, k, l;
 	double entradas[ENTRADAS];
 
 	for (i = 1; i <= EPOCAS; i++)
@@ -241,10 +241,13 @@ void treinar_RNA()
 			calcular_saidas(entradas);
 
 			// Backward (backpropagation)
-			calcular_delta_saida(cj_treinamento[j][6]);
-			calcular_gradiente_oculta();
-			calcular_delta_oculta();
-			ajustar_pesos_sinapticos(entradas);
+			for(l = 0; l < SAIDAS; l++)
+			{
+				calcular_delta_saida(cj_treinamento[j][k + l], l);
+				calcular_gradiente_oculta();
+				calcular_delta_oculta();
+				ajustar_pesos_sinapticos(entradas);
+			}
 		}
 
 	}
@@ -257,13 +260,9 @@ double calcular_erro(double desejado, double saida)
 	return desejado - saida;
 }
 
-void calcular_delta_saida(double desejado)
+void calcular_delta_saida(double desejado, int indice)
 {
-	int i;
-	for (i = 0; i < SAIDAS; i++)
-	{
-		delta_saida[i] = calcular_erro(desejado, saida_s[i]) * (1 - saida_s[i] * saida_s[i]);
-	}
+	delta_saida[indice] = calcular_erro(desejado, saida_s[indice]) * (1 - saida_s[indice] * saida_s[indice]);
 }
 
 void calcular_gradiente_oculta()

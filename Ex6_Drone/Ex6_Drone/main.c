@@ -268,7 +268,6 @@ double calcular_erro(double desejado, double saida)
 
 void calcular_delta_saida(double desejado, int indice)
 {
-	int i;
 	delta_saida[indice] = calcular_erro(desejado, saida_s[indice]) * (1 - saida_s[indice] * saida_s[indice]);
 }
 
