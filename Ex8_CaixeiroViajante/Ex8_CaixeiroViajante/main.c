@@ -33,8 +33,13 @@ typedef struct filhos
 /*
 	Estrutura de dados
 */
-u_int distancias[NR_CIDADES][NR_CIDADES];
+u_int distancias[NR_CIDADES][NR_CIDADES] = 
+{
+
+};
+
 ind_t populacao[NR_IND_POP];
+ind_t melhores[NR_CIDADES];
 
 
 
@@ -44,11 +49,12 @@ ind_t populacao[NR_IND_POP];
 void cria_populacao_inicial();
 void calcula_fitness(ind_t *individuo);
 void calcula_fitness_pop();
-u_int seleciona_melhor();
+void  seleciona_melhor();
 filhos_t cruzamento(ind_t ind_1, ind_t ind_2);
 void mutacao(ind_t *individuo);
 void mostra_cromossomo(ind_t individuo);
 void mostra_populacao();
+void mostra_melhores();
 void ordena_pop_fitness();
 
 
@@ -57,7 +63,7 @@ Fun��o principal
 */
 int main()
 {
-	int geracoes = 0, i;
+	int geracoes = 0, i, reiniciar = 0, opcaoSub;
 
 	// Gera a sementinha do mal
 	srand(time(NULL));
@@ -74,17 +80,34 @@ int main()
 		ordena_pop_fitness();
 
 		// Seleciona os x melhores
-
+		seleciona_melhor();
 
 		// Muta alguns individuos (prob. p)
 		for (i = 0; i < NR_IND_POP; i++)
 		{
 			mutacao(&populacao[i]);
 		}
-			
 		geracoes++;
 	} while (geracoes <= NR_GERACOES);
 
+	while (reiniciar != 1)
+	{
+		printf("\n*******************************************");
+		printf("\n1 - Mostra Populacao");
+		printf("\n2 - Mostra Melhores");
+		printf("\nOpcao? ");
+		scanf("%i", &opcaoSub);
+		switch (opcaoSub)
+		{
+			case 1:
+				mostra_populacao();
+				break;
+			case 2:
+				mostra_melhores();
+				break;
+		}
+	}
+	system("pause");
 	return 0;
 }
 
@@ -125,9 +148,14 @@ void calcula_fitness_pop()
 	}
 }
 
-u_int seleciona_melhor()
+void seleciona_melhor()
 {
+	int i;
 
+	for (i = 0; i < NR_CIDADES; i++)
+	{
+		melhores[i] = populacao[i];
+	}
 }
 
 filhos_t cruzamento(ind_t ind_1, ind_t ind_2)
@@ -161,7 +189,6 @@ void mutacao(ind_t *individuo)
 		int ponto_de_mutacao = rand() % GENES;  // 0 .. GENES - 1
 		individuo->cromossomo[ponto_de_mutacao] = rand() % NR_CIDADES + 1;
 	}
-
 }
 
 void mostra_cromossomo(ind_t individuo)
@@ -190,6 +217,18 @@ void mostra_populacao()
 	printf("Media de fitness da populacao: %.2f\n", media_fitness / NR_IND_POP);
 }
 
+void mostra_melhores()
+{
+	int i, somaDistancia = 0;
+
+	printf("\nMelhores");
+	for (i = 0; i < NR_CIDADES; i++)
+	{
+		printf("\n %d", melhores[i].id);
+		somaDistancia = somaDistancia + (distancias[melhores[i].id][melhores[i].id + 1]);
+	}
+	printf("\n Soma das Distancias: %i", somaDistancia);
+}
 void ordena_pop_fitness()
 {
 	int i, j;
