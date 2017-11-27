@@ -4,27 +4,17 @@
 #include <math.h>
 
 #define ENTRADAS        3
-#define SAIDAS          3
-#define NR_AMOSTRAS     8
-#define NR_NEURON_O     7
-#define EPOCAS          100000	
+#define SAIDAS          1
+#define NR_AMOSTRAS     173
+#define NR_NEURON_O     5
+#define EPOCAS          100000
 #define TX_APRENDIZADO  0.8
 #define MOMENTUM        0.9
 #define ZERO_TEST       0
 
 
 /* Dados para o treinamento da rede */
-double cj_treinamento[NR_AMOSTRAS][ENTRADAS + SAIDAS] =
-{
-	{ 0, 0, 0, 1, 0, 0 }, //A
-	{ 0, 0, 1, 0, 1, 0 }, //B
-	{ 0, 1, 0, 1, 1, 0 }, //C
-	{ 0, 1, 1, 0, 0, 0 }, //D
-	{ 1, 0, 0, 1, 1, 1 }, //E
-	{ 1, 0, 1, 1, 1, 0 }, //F
-	{ 1, 1, 0, 0, 1, 1 }, //G
-	{ 1, 1, 1, 1, 0, 1 }  //H
-};
+double cj_treinamento[NR_AMOSTRAS][ENTRADAS + SAIDAS];
 
 /* Variaveis globais */
 double w_e_o[ENTRADAS + 1][NR_NEURON_O];
@@ -52,6 +42,7 @@ void calcular_gradiente_oculta();
 void ajustar_pesos_sinapticos(double entradas[ENTRADAS]);
 void gravar_pesos_sinapticos();
 void restaurar_pesos_sinapticos();
+void leituraArquivo();
 
 /* Função principal */
 int main()
@@ -59,6 +50,7 @@ int main()
 	int opcao = 0, cont, resposta;
 	double entradas[ENTRADAS];
 
+	leituraArquivo();
 
 	inicializa_sinapses();
 	treinar_RNA();
@@ -84,7 +76,7 @@ int main()
 			calcular_saidas(entradas);
 			for (cont = 0; cont < SAIDAS; cont++)
 			{
-				printf("\nResultado %i: %f\n", cont + 1, saida_s[cont]);
+				printf("\nResultado %i: %lf\n", cont + 1, saida_s[cont]);
 			}
 			break;
 
@@ -289,4 +281,38 @@ void ajustar_pesos_sinapticos(double entradas[ENTRADAS])
 			w_e_o[j][i] = w_e_o[j][i] + TX_APRENDIZADO * delta_oculta[i] * entradas[j - 1];
 		}
 	}
+}
+
+void leituraArquivo()
+{
+	FILE *arqMatrizA;
+	char url[] = "matriz.txt";
+	// Abre um arquivo TEXTO para LEITURA
+	arqMatrizA = fopen(url, "r");
+	if (arqMatrizA == NULL)  // Se houve erro na abertura
+	{
+		printf("Problemas na abertura do arquivo\n");
+	}
+	else
+	{
+		for (int i = 0; i < NR_AMOSTRAS; ++i)
+		{
+			for (int j = 0; j < (ENTRADAS + SAIDAS); ++j)
+			{
+				fscanf(arqMatrizA, "%lf	", &cj_treinamento[i][j]);
+			}
+			fscanf(arqMatrizA, "\n");
+		}
+
+		for (int i = 0; i < NR_AMOSTRAS; ++i)
+		{
+			for (int j = 0; j < (ENTRADAS + SAIDAS); ++j)
+			{
+				printf("%lf ", cj_treinamento[i][j]);
+			}
+			printf("\n");
+		}
+
+	}
+	fclose(arqMatrizA);
 }
