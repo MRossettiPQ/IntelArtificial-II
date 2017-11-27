@@ -14,11 +14,11 @@ Algoritmo gen�tico para resolver o problema do caixeiro viajante
 
 
 /*
-	Tipos de dados
+Tipos de dados
 */
 typedef unsigned int u_int;
 
-typedef struct individuo 
+typedef struct individuo
 {
 	u_int id;
 	int id_cidade; //1 a 5
@@ -26,21 +26,21 @@ typedef struct individuo
 	u_int cromossomo[GENES];
 } ind_t;
 
-typedef struct filhos 
+typedef struct filhos
 {
 	ind_t filhos[2];
 } filhos_t;
 
 /*
-	Estrutura de dados
+Estrutura de dados
 */
-u_int distancias[NR_CIDADES][NR_CIDADES] = 
+u_int distancias[NR_CIDADES][NR_CIDADES] =
 {
-	{0, 50, 30, 50, 20},
-	{50, 0, 60, 60, 20},
-	{30, 80, 0, 40, 20},
-	{60, 60, 40, 0, 20},
-	{20, 20, 20, 20, 0}
+	{ 0, 50, 30, 50, 20 },
+	{ 50, 0, 60, 60, 20 },
+	{ 30, 80, 0, 40, 20 },
+	{ 60, 60, 40, 0, 20 },
+	{ 20, 20, 20, 20, 0 }
 };
 ind_t populacao[NR_IND_POP]; //Gerado Aleatoriamente
 filhos_t melhores[NR_CIDADES];
@@ -48,7 +48,7 @@ filhos_t melhores[NR_CIDADES];
 
 
 /*
-	Cabeçalho das fun��es auxiliares
+Cabeçalho das fun��es auxiliares
 */
 void cria_populacao_inicial();
 void calcula_fitness(ind_t *individuo);
@@ -75,7 +75,7 @@ int main()
 	// Cria uma populacao de individuos
 	cria_populacao_inicial();
 
-	do 
+	do
 	{
 		// Avalia os individuos (calcula fitness)
 		calcula_fitness_pop();
@@ -103,12 +103,12 @@ int main()
 		scanf("%i", &opcaoSub);
 		switch (opcaoSub)
 		{
-			case 1:
-				mostra_populacao();
-				break;
-			case 2:
-				mostra_melhores();
-				break;
+		case 1:
+			mostra_populacao();
+			break;
+		case 2:
+			mostra_melhores();
+			break;
 		}
 	}
 	system("pause");
@@ -122,11 +122,11 @@ Implementa��o das fun��es auxiliares
 void cria_populacao_inicial()
 {
 	int i, j;
-	for (i = 0; i < NR_IND_POP; i++) 
+	for (i = 0; i < NR_IND_POP; i++)
 	{
 		populacao[i].id = i + 1;
 		populacao[i].fitness = 0.0;
-		for (j = 0; j < GENES; j++) 
+		for (j = 0; j < GENES; j++)
 		{
 			populacao[i].cromossomo[j] = rand() % NR_CIDADES;
 		}
@@ -137,7 +137,7 @@ void calcula_fitness(ind_t *individuo)
 {
 	int i;
 
-	for (i = 0; i < GENES - 1; i++) 
+	for (i = 0; i < GENES - 1; i++)
 	{
 		individuo->fitness += abs(individuo->cromossomo[i] - individuo->cromossomo[i + 1]);
 	}
@@ -147,7 +147,7 @@ void calcula_fitness_pop()
 {
 	int i;
 
-	for (i = 0; i < NR_IND_POP; i++) 
+	for (i = 0; i < NR_IND_POP; i++)
 	{
 		calcula_fitness(&populacao[i]);
 	}
@@ -160,7 +160,7 @@ filhos_t cruzamento(ind_t ind_1, ind_t ind_2)
 	filhos_t filhos;
 
 	// Inverte os genes de ind_1 com ind_2
-	for (i = 0; i <= ponto_cruzamento; i++) 
+	for (i = 0; i <= ponto_cruzamento; i++)
 	{
 		gene = ind_1.cromossomo[i];
 		ind_1.cromossomo[i] = ind_2.cromossomo[i];
@@ -178,7 +178,7 @@ void mutacao(ind_t *individuo)
 {
 	int pmut = rand() % 100;
 
-	if (pmut >= PMUT) 
+	if (pmut >= PMUT)
 	{
 		// Escolhe o ponto de muta��o
 		int ponto_de_mutacao = rand() % GENES;  // 0 .. GENES - 1
@@ -191,7 +191,7 @@ void mostra_cromossomo(ind_t individuo)
 	int i;
 
 	printf("Cromossomo do individuo %d\n", individuo.id);
-	for (i = 0; i < GENES; i++) 
+	for (i = 0; i < GENES; i++)
 	{
 		printf("%d ", individuo.cromossomo[i]);
 	}
@@ -217,11 +217,11 @@ void ordena_pop_fitness()
 	int i, j;
 	ind_t ind;
 
-	for (i = 0; i < NR_IND_POP; i++) 
+	for (i = 0; i < NR_IND_POP; i++)
 	{
-		for (j = 0; j < NR_IND_POP; j++) 
+		for (j = 0; j < NR_IND_POP; j++)
 		{
-			if (populacao[i].fitness < populacao[j].fitness) 
+			if (populacao[i].fitness < populacao[j].fitness)
 			{
 				ind = populacao[i];
 				populacao[i] = populacao[j];
@@ -236,7 +236,7 @@ void seleciona_melhor()
 	int i;
 	for (i = 0; i < NR_CIDADES - 1; i++)
 	{
-		melhores[i] = cruzamento(populacao[i], populacao[i+1]);
+		melhores[i] = cruzamento(populacao[i], populacao[i + 1]);
 	}
 }
 
