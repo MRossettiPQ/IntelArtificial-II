@@ -1,255 +1,336 @@
-﻿/*
-Algoritmo gen�tico para resolver o problema do caixeiro viajante
-*/
-#include <stdio.h>
+﻿#include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <time.h>
 
-#define NR_CIDADES    5
-#define NR_GERACOES   1000
-#define GENES         NR_CIDADES
-#define NR_IND_POP    10
-#define PMUT          30        // 30%
-#define PREC          100       // 100%
+#define MAX_CROMOSSOMO  6
+#define MAX_GERACOES    100
+#define MAX_POP_SIZE    20
 
+#define TX_MUTACAO 0.3
+#define MAX_INSTRUCAO 6
 
-/*
-Tipos de dados
-*/
-typedef unsigned int u_int;
-
-typedef struct individuo
-{
-	u_int id;
-	int id_cidade; //1 a 5
-	float fitness;
-	u_int cromossomo[GENES];
-} ind_t;
-
-typedef struct filhos
-{
-	ind_t filhos[2];
-} filhos_t;
-
-/*
-Estrutura de dados
-*/
-u_int distancias[NR_CIDADES][NR_CIDADES] =
-{
-	{ 0, 50, 30, 50, 20 },
-	{ 50, 0, 60, 60, 20 },
-	{ 30, 80, 0, 40, 20 },
-	{ 60, 60, 40, 0, 20 },
-	{ 20, 20, 20, 20, 0 }
+float base[][2] = {
+	{ 0 , 6 },
+	{ 7 , 10 },
+	{ 10, 0 },
+	{ 15, 9 },
+	{ 16, 5 },
+	{ 20, 7 }
 };
-ind_t populacao[NR_IND_POP]; //Gerado Aleatoriamente
-filhos_t melhores[NR_CIDADES];
 
+typedef enum {
+	ERMO = 1, TURVO, TORRES, PALMAS, BRASILIA, BOSTON
+} instrucao;
 
+typedef instrucao cromossomo[MAX_CROMOSSOMO];
+
+typedef struct {
+	cromossomo g_cromo;
+	float fitness;
+} individuo_t;
+
+typedef struct {
+	individuo_t individuos[MAX_POP_SIZE];
+	unsigned int geracao;
+	float media_fitness_pop;
+} pop_t;
 
 /*
-Cabeçalho das fun��es auxiliares
+Cabeçalho das rotinas auxiliares
 */
-void cria_populacao_inicial();
-void calcula_fitness(ind_t *individuo);
-void calcula_fitness_pop();
-void  seleciona_melhor();
-filhos_t cruzamento(ind_t ind_1, ind_t ind_2);
-void mutacao(ind_t *individuo);
-void mostra_cromossomo(ind_t individuo);
-void mostra_populacao();
-void mostra_melhores();
-void ordena_pop_fitness();
-
+individuo_t geraIndividuo();
+void iniciaPopulacao(pop_t *populacao);
+void calculaFitness(individuo_t *ind);
+int genesDistintos(cromossomo numeros);
+void ordenaPopulacao(pop_t *populacao);
+individuo_t* reproducao(pop_t populacao);
+individuo_t torneio(pop_t populacao);
+individuo_t cruzamento(individuo_t pai, individuo_t mae);
+void mutacao(individuo_t filhos[]);
+void selecaoNatural(pop_t *populacao, individuo_t filhos[]);
+int quemEuSou(individuo_t ind);
+void mostraIndividuo(individuo_t umIndividuo);
+float pRandom();
 
 /*
-Fun��o principal
+Função principal
 */
 int main()
 {
-	int geracoes = 0, i, reiniciar = 0, opcaoSub;
-
-	// Gera a sementinha do mal
 	srand(time(NULL));
+	int i, geracao = 0;
+	float soma = 0;
 
-	// Cria uma populacao de individuos
-	cria_populacao_inicial();
+	pop_t populacao;
+	iniciaPopulacao(&populacao);
 
-	do
+
+	printf("Geracao Aptidao           Solucao\n");
+	while (populacao.geracao < MAX_GERACOES)
 	{
-		// Avalia os individuos (calcula fitness)
-		calcula_fitness_pop();
-
-		// Ordena a populacao
-		ordena_pop_fitness();
-
-		// Seleciona os x melhores
-		seleciona_melhor();
-
-		// Muta alguns individuos (prob. p)
-		for (i = 0; i < NR_IND_POP; i++)
+		//printf("Avaliando...\n");
+		// Aqui icorre a avaliação da aptidão de cada indivíduo
+		for (i = 0, soma = 0; i < MAX_POP_SIZE; i++)
 		{
-			mutacao(&populacao[i]);
+			calculaFitness(&populacao.individuos[i]);
+			soma += populacao.individuos[i].fitness;
 		}
-		geracoes++;
-	} while (geracoes <= NR_GERACOES);
+		populacao.media_fitness_pop = soma / i;
 
-	while (reiniciar != 1)
-	{
-		printf("\n*******************************************");
-		printf("\n1 - Mostra Populacao");
-		printf("\n2 - Mostra Melhores");
-		printf("\nOpcao? ");
-		scanf("%i", &opcaoSub);
-		switch (opcaoSub)
-		{
-		case 1:
-			mostra_populacao();
-			break;
-		case 2:
-			mostra_melhores();
-			break;
-		}
+		//mostraPopulacao(populacao);
+
+		//printf("Evoluindo...");
+		// Aqui ocorre a evolução: ordenação -> reprodução -> seleção
+		ordenaPopulacao(&populacao);
+		selecaoNatural(&populacao, reproducao(populacao));
+
+		// Mostra a melhor solução em cada época
+		printf("%d\t", populacao.geracao++);
+		mostraIndividuo(populacao.individuos[0]);
 	}
-	system("pause");
+
 	return 0;
 }
 
 /*
-Implementa��o das fun��es auxiliares
+* Constrói um novo indivíduo
 */
-
-void cria_populacao_inicial()
+individuo_t geraIndividuo()
 {
-	int i, j;
-	for (i = 0; i < NR_IND_POP; i++)
-	{
-		populacao[i].id = i + 1;
-		populacao[i].fitness = 0.0;
-		for (j = 0; j < GENES; j++)
-		{
-			populacao[i].cromossomo[j] = rand() % NR_CIDADES;
-		}
-	}
+	individuo_t new_ind;
+	int i, tamanho_ind = 6;//rand() % (MAX_CROMOSSOMO - 2) + 3;
+
+	for (i = 0; i < tamanho_ind; i++)
+		new_ind.g_cromo[i] = (instrucao)(rand() % MAX_INSTRUCAO + 1);
+	/*
+	for (i = tamanho_ind; i < MAX_CROMOSSOMO; i++)
+	new_ind.g_cromo[i] = VAZIO;
+	*/
+	new_ind.fitness = 0.0;
+
+	return new_ind;
 }
 
-void calcula_fitness(ind_t *individuo)
+/*
+* Constrói uma nova população
+*/
+void iniciaPopulacao(pop_t *populacao)
 {
 	int i;
 
-	for (i = 0; i < GENES - 1; i++)
-	{
-		individuo->fitness += abs(individuo->cromossomo[i] - individuo->cromossomo[i + 1]);
-	}
-}
+	for (i = 0; i < MAX_POP_SIZE; i++)
+		populacao->individuos[i] = geraIndividuo();
 
-void calcula_fitness_pop()
+	populacao->geracao = 0;
+	populacao->media_fitness_pop = 0.0;
+}
+/*
+* Função fitness - Calcula a aptidão do indivíduo
+* Precisa ser aprimorada
+*/
+void calculaFitness(individuo_t *ind)
 {
 	int i;
+	float caminho, xQuad, yQuad;
 
-	for (i = 0; i < NR_IND_POP; i++)
+	for (i = 1, caminho = 0; i < quemEuSou(*ind); i++)
 	{
-		calcula_fitness(&populacao[i]);
-	}
-}
-
-filhos_t cruzamento(ind_t ind_1, ind_t ind_2)
-{
-	int ponto_cruzamento = rand() % (NR_CIDADES - 1);
-	int gene, i, j;
-	filhos_t filhos;
-
-	// Inverte os genes de ind_1 com ind_2
-	for (i = 0; i <= ponto_cruzamento; i++)
-	{
-		gene = ind_1.cromossomo[i];
-		ind_1.cromossomo[i] = ind_2.cromossomo[i];
-		ind_2.cromossomo[i] = gene;
+		xQuad = pow(base[ind->g_cromo[i - 1] - 1][0] - base[ind->g_cromo[i] - 1][0], 2);
+		yQuad = pow(base[ind->g_cromo[i - 1] - 1][1] - base[ind->g_cromo[i] - 1][1], 2);
+		caminho += sqrt(xQuad + yQuad);
+		//printf("%c - %c: %f\n",(ind->g_cromo[i-1]+64), (ind->g_cromo[i]+64), sqrt(xQuad+yQuad));
 	}
 
-	// Gera os filhos
-	filhos.filhos[0] = ind_1;
-	filhos.filhos[1] = ind_2;
-
-	return filhos;
+	xQuad = pow(base[ind->g_cromo[i - 1] - 1][0] - base[ind->g_cromo[0] - 1][0], 2);
+	yQuad = pow(base[ind->g_cromo[i - 1] - 1][1] - base[ind->g_cromo[0] - 1][1], 2);
+	caminho += sqrt(xQuad + yQuad);
+	//printf("%c - %c: %f\n",(ind->g_cromo[i-1]+64), (ind->g_cromo[0]+64), sqrt(xQuad+yQuad));
+	//printf("Caminho: %f\n", caminho);
+	//ind->fitness = caminho*(MAX_CROMOSSOMO-genesDistintos(ind->g_cromo)+1);
+	ind->fitness = pow(caminho, (MAX_CROMOSSOMO - genesDistintos(ind->g_cromo) + 1));
 }
 
-void mutacao(ind_t *individuo)
+/*
+* Retorna quantos valores distintos estão presentes no cromossomo
+*/
+int genesDistintos(cromossomo numeros)
 {
-	int pmut = rand() % 100;
-
-	if (pmut >= PMUT)
+	int i, j, n = 1;
+	for (i = 1; i < MAX_CROMOSSOMO; i++)
 	{
-		// Escolhe o ponto de muta��o
-		int ponto_de_mutacao = rand() % GENES;  // 0 .. GENES - 1
-		individuo->cromossomo[ponto_de_mutacao] = rand() % NR_CIDADES + 1;
-	}
-}
-
-void mostra_cromossomo(ind_t individuo)
-{
-	int i;
-
-	printf("Cromossomo do individuo %d\n", individuo.id);
-	for (i = 0; i < GENES; i++)
-	{
-		printf("%d ", individuo.cromossomo[i]);
-	}
-	printf("Fitness: %.2f\n\n", individuo.fitness);
-}
-
-void mostra_populacao()
-{
-	int i;
-	float media_fitness = 0.0;
-
-	printf("Populacao...........\n");
-	for (i = 0; i < NR_IND_POP; i++)
-	{
-		mostra_cromossomo(populacao[i]);
-		media_fitness += populacao[i].fitness;
-	}
-	printf("Media de fitness da populacao: %.2f\n", media_fitness / NR_IND_POP);
-}
-
-void ordena_pop_fitness()
-{
-	int i, j;
-	ind_t ind;
-
-	for (i = 0; i < NR_IND_POP; i++)
-	{
-		for (j = 0; j < NR_IND_POP; j++)
-		{
-			if (populacao[i].fitness < populacao[j].fitness)
+		n++;
+		for (j = 0; j < i; j++)
+			if (numeros[j] == numeros[i])
 			{
-				ind = populacao[i];
-				populacao[i] = populacao[j];
-				populacao[j] = ind;
+				n--;
+				break;
+			}
+	}
+	return n;
+}
+
+void ordenaPopulacao(pop_t *populacao)
+{
+	int i, j;
+	individuo_t aux;
+
+	for (i = 0; i < MAX_POP_SIZE; i++) {
+		for (j = 0; j < MAX_POP_SIZE - 1; j++) {
+			if (populacao->individuos[j].fitness > populacao->individuos[j + 1].fitness) {
+				aux = populacao->individuos[j];
+				populacao->individuos[j] = populacao->individuos[j + 1];
+				populacao->individuos[j + 1] = aux;
 			}
 		}
 	}
 }
 
-void seleciona_melhor()
+/*
+* Retorna um vetor de filhos para compor uma nova geração
+*/
+individuo_t* reproducao(pop_t populacao)
 {
 	int i;
-	for (i = 0; i < NR_CIDADES - 1; i++)
-	{
-		melhores[i] = cruzamento(populacao[i], populacao[i + 1]);
-	}
+	individuo_t* filhos = (individuo_t*)malloc(sizeof(individuo_t)*MAX_POP_SIZE / 2);
+
+	for (i = 0; i < MAX_POP_SIZE / 2; i++)
+		filhos[i] = cruzamento(torneio(populacao), torneio(populacao));
+
+	mutacao(filhos);
+
+	return filhos;
 }
 
-void mostra_melhores()
+/*
+* Retorna um pai vencedor entre a população
+*/
+individuo_t torneio(pop_t populacao)
+{   // O número gerado entre colchetes é um índice, sendo que os índices menores são mais prováveis
+	return populacao.individuos[(int)lround(pRandom()*(MAX_POP_SIZE - 1))];
+}
+
+/*
+* Cruza dois individuos selecionados e retorna seu filho - crossing over
+*/
+individuo_t cruzamento(individuo_t pai, individuo_t mae)
 {
-	int i, j, somaDistancia = 0;
+	individuo_t filho;
+	int i, cut = rand() % (quemEuSou(filho)); //Esta linha determina com quanto cada parte contribuirá
 
-	printf("\nMelhores");
-	for (i = 0; i < NR_CIDADES; i++)
-	{
-		printf("\n Individuo: %d - Cidade - Fitness: %f", melhores[i].filhos->id, melhores[i].filhos->fitness);
+	if (rand() % 10 < 5) { // Esta linha determina quem dará a primeira parte do cromossomo
+		for (i = 0; i < cut; i++)
+			filho.g_cromo[i] = pai.g_cromo[i];
 
-		somaDistancia = somaDistancia + (distancias[melhores[i].filhos->id][melhores[i].filhos->id + 1]);
+		for (i = cut; i < quemEuSou(filho); i++)
+			filho.g_cromo[i] = mae.g_cromo[i];
 	}
-	printf("\n Soma das Distancias: %i", somaDistancia);
+	else {
+		for (i = 0; i < cut; i++)
+			filho.g_cromo[i] = mae.g_cromo[i];
+
+		for (i = cut; i < quemEuSou(filho); i++)
+			filho.g_cromo[i] = pai.g_cromo[i];
+	}
+
+	return filho;
+}
+
+/*
+* Percorre os cromossomos de cada filho, criando mutações em alguns genes
+*/
+void mutacao(individuo_t filhos[])
+{
+	int i, j;
+	for (i = 0; i < MAX_POP_SIZE / 2; i++)
+		for (j = 0; j < quemEuSou(filhos[i]); j++)
+			if (pRandom() < TX_MUTACAO * 2) // Determina a probabilidade de que a mutação ocorra
+				filhos[i].g_cromo[j] = (instrucao)(rand() % MAX_INSTRUCAO + 1);
+}
+
+/*
+* Seleção por truncamento, talvez não muito eficiente
+* Trocar por seleção por roleta ou torneio pode ser uma boa opção
+*/
+void selecaoNatural(pop_t *populacao, individuo_t filhos[])
+{
+	int i;
+	for (i = 0; i < MAX_POP_SIZE / 2; i++)
+		populacao->individuos[MAX_POP_SIZE - i - 1] = filhos[i];
+	free(filhos);
+}
+
+/*
+* Retorna o tamanho do cromossomo do individuo
+*/
+int quemEuSou(individuo_t ind)
+{
+	int i = 0;
+	while (i < MAX_CROMOSSOMO) i++;
+
+	return i;
+}
+
+/*
+* Exibe a população no console
+*/
+/*void mostraPopulacao(pop_t populacao)
+{
+int i, j;
+
+printf("Geracao:                %d\n", populacao.geracao);
+printf("Media fitness           %.2f\n", populacao.media_fitness_pop);
+
+for (i = 0; i < MAX_POP_SIZE; i++)
+{
+printf("%d. ", i);
+
+mostraIndividuo(populacao.individuos[i]);
+
+printf("\n\n");
+}
+}
+
+/*
+* Apenas para fim de debug, usada para mostrar os filhos
+*/
+/*void mostraIndividuos(individuo_t individuos[])
+{
+int i, j;
+for (i = 0; i < MAX_POP_SIZE/2; i++)
+{
+printf("%d. ", i);
+
+mostraIndividuo(individuos[i]);
+
+printf("\n\n");
+}
+}
+
+/*
+* Exibe os dados de um individuo
+*/
+void mostraIndividuo(individuo_t umIndividuo)
+{
+	int j;
+	printf("%5.2f\t\t", umIndividuo.fitness);
+	for (j = 0; j < MAX_CROMOSSOMO; j++)
+		printf("%d ", umIndividuo.g_cromo[j]);
+	printf("\n");
+}
+
+/*
+* Retorna um valor aleatório entre 0 e 1, gerado sob probabilidade
+*/
+float pRandom()
+{
+	float x;
+	float y;
+
+	do {
+		x = (rand() % 10) / 10.0; // Número
+		y = (rand() % 10) / 10.0; // Nota
+	} while (y > exp(-3 * x));   // Derivada
+
+	return x;
 }
