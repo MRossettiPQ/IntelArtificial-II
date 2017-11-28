@@ -229,6 +229,7 @@ individuo_t cruzamento(individuo_t pai, individuo_t mae)
 		for (i = 0; i < cut; i++)
 			filho.g_cromo[i] = mae.g_cromo[i];
 
+
 		for (i = cut; i < quemEuSou(filho); i++)
 			filho.g_cromo[i] = pai.g_cromo[i];
 	}
